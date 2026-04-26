@@ -4,16 +4,21 @@ on:
   push:
     tags: ['[0-9]+.[0-9]+.[0-9]+*']
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install musl target
-        run: rustup target add x86_64-unknown-linux-musl
-
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - name: Install musl tooling
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
 
       - name: Build static binary
         run: cargo build --release --target x86_64-unknown-linux-musl
@@ -24,7 +29,38 @@ jobs:
           cp target/x86_64-unknown-linux-musl/release/ghpulse dist/ghpulse
           tar -czf ghpulse-x86_64-unknown-linux-musl.tar.gz -C dist ghpulse
 
-      - name: Upload release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghpulse-x86_64-unknown-linux-musl
+          path: ghpulse-x86_64-unknown-linux-musl.tar.gz
+
+  changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.cliff.outputs.content }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+
+  release:
+    needs: [build, changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: ghpulse-x86_64-unknown-linux-musl.tar.gz
+          files: ghpulse-*.tar.gz
+          body: ${{ needs.changelog.outputs.changelog }}
