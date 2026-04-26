@@ -163,30 +163,30 @@ ghpulse --token "$TOKEN" --theme my-theme --theme-dir ~/.config/ghpulse/themes
 
 ## Token permissions
 
-### Classic personal access token
+Repos are discovered through your commit contributions, so anything you've actually committed to (org repos, forks, OSS projects) surfaces regardless of token type. Repos you own but never committed to won't appear.
+
+### Classic PAT (recommended — simpler)
 
 | Scope | What it unlocks |
 |-------|----------------|
-| `read:user` | Public profile, repos, contribution data, language breakdown |
-| `user:email` | Email addresses (for git attribution fallback) |
-| `repo` | Private repos, traffic/view counts, contributor line stats |
+| `read:user` | Profile, contribution data, language breakdown |
+| `read:org` | Org repos and org-admin detection |
+| `repo` | Private repos and traffic/view counts |
 
-Minimum for public-only data: `read:user`. Add `repo` if you want private repos and traffic.
+Minimum for public data: `read:user`. Add `read:org` for org-admin attribution and `repo` for private repos and traffic.
 
-### Fine-grained personal access token
+### Fine-grained PAT (more restrictive)
 
-Under **Account permissions**:
-- **Email addresses** — Read-only
+**Repository permissions**
+- Metadata — Read (required)
+- Contents — Read
+- Administration — Read (only for traffic/view counts)
 
-Under **Repository permissions**:
-- **Metadata** — Read-only (always required)
-- **Commit statuses** — Read-only
-- **Content** — Read-only
+**For org repos**, the org owner must:
+1. Enable fine-grained tokens in *Org Settings → Personal access tokens → Allow access via fine-grained personal access tokens*.
+2. Approve your token if approval is required.
 
-For private repos and traffic data, set **Repository permissions**:
-- **Administration** — Read-only
-
-The default "Public Repositories (read-only)" preset covers most use cases if you only want public data.
+When creating the token, set **Resource owner** to each org you want included (one token per resource owner). If your org doesn't allow fine-grained tokens, use a classic PAT instead.
 
 ## Build from source
 
