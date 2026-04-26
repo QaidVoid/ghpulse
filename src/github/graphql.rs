@@ -1,65 +1,27 @@
 use anyhow::Result;
-use serde::Deserialize;
 
 use crate::github::client::Client;
-use crate::stats::types::{ContributionYear, Language, Repo, User};
+use crate::stats::types::User;
 
-/// GraphQL response wrapper for user info query.
-#[derive(Deserialize)]
-struct UserResponse {
-    data: UserData,
-}
-
-#[derive(Deserialize)]
-struct UserData {
-    viewer: UserNode,
-}
-
-#[derive(Deserialize)]
-struct UserNode {
-    login: String,
-    name: Option<String>,
-    avatar_url: String,
-    contributions_collection: ContributionsCollection,
-}
-
-#[derive(Deserialize)]
-#[expect(dead_code)]
-struct ContributionsCollection {
-    contribution_years: Vec<i32>,
-    contribution_calendar: ContributionCalendar,
-}
-
-#[derive(Deserialize)]
-#[expect(dead_code)]
-struct ContributionCalendar {
-    total_contributions: u32,
-}
-
-/// Fetch the authenticated user's info and contribution years.
+/// Fetch the authenticated user's info.
 pub fn fetch_user(client: &Client) -> Result<User> {
     let query = r#"{
         viewer {
             login
             name
             avatarUrl
-            contributionsCollection {
-                contributionYears
-                contributionCalendar {
-                    totalContributions
-                }
-            }
         }
     }"#;
 
     let body = format!("{{\"query\": {}}}", serde_json::to_string(query)?);
-    let resp = client.graphql_post(&body)?;
-    let data: UserResponse = serde_json::from_reader(resp.into_body().as_reader())?;
+    let data = client.graphql_query(&body)?;
+
+    let viewer = &data["data"]["viewer"];
 
     Ok(User {
-        login: data.data.viewer.login,
-        name: data.data.viewer.name,
-        avatar_url: data.data.viewer.avatar_url,
+        login: viewer["login"].as_str().unwrap_or_default().to_string(),
+        name: viewer["name"].as_str().map(String::from),
+        avatar_url: viewer["avatarUrl"].as_str().unwrap_or_default().to_string(),
     })
 }
 
@@ -74,25 +36,47 @@ pub fn fetch_contribution_years(client: &Client) -> Result<Vec<i32>> {
     }"#;
 
     let body = format!("{{\"query\": {}}}", serde_json::to_string(query)?);
-    let resp = client.graphql_post(&body)?;
-    let data: UserResponse = serde_json::from_reader(resp.into_body().as_reader())?;
+    let data = client.graphql_query(&body)?;
 
-    Ok(data.data.viewer.contributions_collection.contribution_years)
+    let years = data["data"]["viewer"]["contributionsCollection"]["contributionYears"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_i64().map(|y| y as i32))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Ok(years)
 }
 
-/// Fetch per-year contribution stats and commit-contributed repos.
-pub fn fetch_year_contributions(
-    client: &Client,
-    _login: &str,
-    year: i32,
-) -> Result<(ContributionYear, Vec<RepoNode>)> {
-    let from = format!("{year}-01-01T00:00:00Z");
-    let to = format!("{}-01-01T00:00:00Z", year + 1);
+#[derive(Debug, Default, Clone, Copy)]
+pub struct PeriodTotals {
+    pub repos: u32,
+    pub issues: u32,
+    pub commits: u32,
+    pub pull_requests: u32,
+    pub reviews: u32,
+}
 
+pub struct PeriodContributions {
+    pub totals: PeriodTotals,
+    pub repos: Vec<RepoNode>,
+}
+
+/// Fetch contributions and contributed-to repos for a half-open date range
+/// `[from, to)`. Walks `commitContributionsByRepository` so org repos and
+/// forks the user contributed to surface even when `viewer.repositories`
+/// can't see them (fine-grained PAT scoping, etc.).
+pub fn fetch_period_contributions(
+    client: &Client,
+    from: &str,
+    to: &str,
+) -> Result<PeriodContributions> {
     let query = format!(
         r#"{{
         viewer {{
-            contributionsCollection(from: "{from}" to: "{to}") {{
+            contributionsCollection(from: "{from}", to: "{to}") {{
                 totalCommitContributions
                 totalIssueContributions
                 totalPullRequestContributions
@@ -106,7 +90,8 @@ pub fn fetch_year_contributions(
                         forkCount
                         isPrivate
                         isArchived
-                        languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
+                        viewerPermission
+                        languages(first: 50, orderBy: {{field: SIZE, direction: DESC}}) {{
                             edges {{
                                 size
                                 node {{
@@ -126,14 +111,17 @@ pub fn fetch_year_contributions(
     );
 
     let body = format!("{{\"query\": {}}}", serde_json::to_string(&query)?);
-    let resp = client.graphql_post(&body)?;
-    let data: serde_json::Value = serde_json::from_reader(resp.into_body().as_reader())?;
+    let data = client.graphql_query(&body)?;
+
+    if let Some(errs) = data.get("errors")
+        && !errs.is_null()
+    {
+        anyhow::bail!("GraphQL error for period {from}..{to}: {errs}");
+    }
 
     let collection = &data["data"]["viewer"]["contributionsCollection"];
 
-    let year_stats = ContributionYear {
-        year,
-        total_count: collection["totalCommitContributions"].as_u64().unwrap_or(0) as u32,
+    let totals = PeriodTotals {
         repos: collection["totalRepositoryContributions"]
             .as_u64()
             .unwrap_or(0) as u32,
@@ -147,27 +135,27 @@ pub fn fetch_year_contributions(
             .unwrap_or(0) as u32,
     };
 
-    let repos_raw = collection["commitContributionsByRepository"]
+    let repos: Vec<RepoNode> = collection["commitContributionsByRepository"]
         .as_array()
-        .cloned()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|entry| serde_json::from_value(entry.clone()).ok())
+                .collect()
+        })
         .unwrap_or_default();
 
-    let repos: Vec<RepoNode> = repos_raw
-        .iter()
-        .filter_map(|entry| serde_json::from_value(entry.clone()).ok())
-        .collect();
-
-    Ok((year_stats, repos))
+    Ok(PeriodContributions { totals, repos })
 }
 
-/// Intermediate repo node from GraphQL response.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RepoNode {
     pub repository: RepoInfo,
     pub contributions: ContributionCount,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RepoInfo {
     pub name: String,
     pub owner: OwnerInfo,
@@ -175,59 +163,40 @@ pub struct RepoInfo {
     pub fork_count: u32,
     pub is_private: bool,
     pub is_archived: bool,
+    pub viewer_permission: Option<String>,
     pub languages: LanguagesConnection,
 }
 
-#[derive(Debug, Deserialize)]
+impl RepoInfo {
+    pub fn is_owner_like(&self) -> bool {
+        matches!(self.viewer_permission.as_deref(), Some("ADMIN"))
+    }
+}
+
+#[derive(Debug, serde::Deserialize)]
 pub struct OwnerInfo {
     pub login: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct LanguagesConnection {
     pub edges: Vec<LanguageEdge>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct LanguageEdge {
     pub size: u64,
     pub node: LanguageNode,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct LanguageNode {
     pub name: String,
     pub color: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ContributionCount {
     pub total_count: u32,
-}
-
-/// Convert a GraphQL RepoNode into a stats Repo.
-impl RepoNode {
-    pub fn into_repo(self) -> Repo {
-        Repo {
-            name: self.repository.name,
-            owner: self.repository.owner.login,
-            stars: self.repository.stargazer_count,
-            forks: self.repository.fork_count,
-            is_private: self.repository.is_private,
-            is_archived: self.repository.is_archived,
-            languages: self
-                .repository
-                .languages
-                .edges
-                .into_iter()
-                .map(|e| Language {
-                    name: e.node.name,
-                    size: e.size,
-                    color: e.node.color,
-                })
-                .collect(),
-            commits: self.contributions.total_count,
-            views: None,
-        }
-    }
 }

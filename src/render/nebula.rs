@@ -80,8 +80,8 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
 
     // Stats summary.
     let summary = format!(
-        "{} repos | {} stars | {} commits",
-        ctx.total_repos, ctx.total_stars, ctx.total_commits
+        "{} repos | {} stars | {} contributions",
+        ctx.total_repos, ctx.total_stars, ctx.total_contributions
     );
     doc.add(
         doc.text(

@@ -19,6 +19,8 @@ pub struct Repo {
     pub forks: u32,
     pub is_private: bool,
     pub is_archived: bool,
+    #[serde(default)]
+    pub is_owner: bool,
     pub languages: Vec<Language>,
     pub commits: u32,
     pub views: Option<u64>,

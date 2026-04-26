@@ -11,6 +11,7 @@ pub struct RenderContext {
     pub total_repos: usize,
     pub total_stars: u32,
     pub total_commits: u32,
+    pub total_contributions: u32,
     pub total_forks: u32,
     pub repos: Vec<RepoContext>,
     pub language_totals: HashMap<String, u64>,
@@ -42,9 +43,29 @@ pub struct LanguageContext {
 
 impl RenderContext {
     pub fn new(stats: &Stats, _theme: &Theme) -> Self {
-        let total_stars: u32 = stats.repos.iter().map(|r| r.stars).sum();
-        let total_commits: u32 = stats.repos.iter().map(|r| r.commits).sum();
-        let total_forks: u32 = stats.repos.iter().map(|r| r.forks).sum();
+        // Only count repos the user owns or admins; summing every
+        // contributed-to repo would credit popular OSS stars to the user.
+        let total_stars: u32 = stats
+            .repos
+            .iter()
+            .filter(|r| r.is_owner)
+            .map(|r| r.stars)
+            .sum();
+        let total_forks: u32 = stats
+            .repos
+            .iter()
+            .filter(|r| r.is_owner)
+            .map(|r| r.forks)
+            .sum();
+        let total_commits: u32 = stats.contribution_years.iter().map(|y| y.commits).sum();
+        // All-time contributions across years: repos + issues + commits + PRs
+        // + reviews. Mirrors github-stats; sidesteps the per-repo 1000-commit
+        // cap that deflates the raw commit number for prolific users.
+        let total_contributions: u32 = stats
+            .contribution_years
+            .iter()
+            .map(|y| y.repos + y.issues + y.commits + y.pull_requests + y.reviews)
+            .sum();
 
         let total_lang_size: u64 = stats.language_totals.values().sum();
 
@@ -113,6 +134,7 @@ impl RenderContext {
             total_repos: stats.repos.len(),
             total_stars,
             total_commits,
+            total_contributions,
             total_forks,
             repos,
             language_totals: stats.language_totals.clone(),

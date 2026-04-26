@@ -12,11 +12,26 @@ pub struct TrafficViews {
 }
 
 /// Fetch traffic/view count for a repo. Requires push access.
-pub fn fetch_traffic(client: &Client, owner: &str, repo: &str, max_retries: u32) -> Result<u64> {
+/// Returns None if access is denied (403), indicating the user doesn't own the repo.
+pub fn fetch_traffic(
+    client: &Client,
+    owner: &str,
+    repo: &str,
+    max_retries: u32,
+) -> Result<Option<u64>> {
     let path = format!("/repos/{owner}/{repo}/traffic/views");
-    let resp = client.get_with_retry(&path, max_retries)?;
+    let resp = match client.get_with_retry(&path, max_retries) {
+        Ok(r) => r,
+        Err(e) => {
+            // 403 means no push access to this repo.
+            if e.to_string().contains("HTTP 403") {
+                return Ok(None);
+            }
+            return Err(e);
+        }
+    };
     let views: TrafficViews = serde_json::from_reader(resp.into_body().as_reader())?;
-    Ok(views.count)
+    Ok(Some(views.count))
 }
 
 /// Contributor stats (lines added/removed). Notoriously flaky.

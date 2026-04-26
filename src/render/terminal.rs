@@ -64,7 +64,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     y += line_h;
 
     doc.add(
-        doc.text(x, y, &format!("COMMITS:  {}", ctx.total_commits))
+        doc.text(x, y, &format!("CONTRIBS: {}", ctx.total_contributions))
             .fill(&theme.foreground)
             .font_size(11.0)
             .font_family(&theme.font),

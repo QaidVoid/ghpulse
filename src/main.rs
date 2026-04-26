@@ -83,31 +83,47 @@ fn run(args: Args) -> Result<()> {
     }
 
     // Render.
-    let theme = svg::theme::load(&args.theme, args.theme_dir.as_deref())?;
-    let ctx = render::context::RenderContext::new(&stats, &theme);
-    let svg_str = render::render(&ctx, &theme)?;
+    let theme_names = if args.theme == "all" {
+        vec![
+            "nebula".to_string(),
+            "nebula-light".to_string(),
+            "terminal".to_string(),
+            "radar".to_string(),
+            "heatmap".to_string(),
+            "fingerprint".to_string(),
+        ]
+    } else {
+        vec![args.theme.clone()]
+    };
 
-    // Output.
-    match args.format.as_str() {
-        "png" => {
-            #[cfg(feature = "png")]
-            {
-                output::write_png(&args.output, &args.theme, &svg_str)?;
+    for name in &theme_names {
+        let theme = svg::theme::load(name, args.theme_dir.as_deref())?;
+        let ctx = render::context::RenderContext::new(&stats, &theme);
+        let svg_str = render::render(&ctx, &theme)?;
+
+        match args.format.as_str() {
+            "png" => {
+                #[cfg(feature = "png")]
+                {
+                    output::write_png(&args.output, name, &svg_str)?;
+                }
+                #[cfg(not(feature = "png"))]
+                {
+                    anyhow::bail!(
+                        "PNG export requires the 'png' feature (build with --features png)"
+                    );
+                }
             }
-            #[cfg(not(feature = "png"))]
-            {
-                anyhow::bail!("PNG export requires the 'png' feature (build with --features png)");
+            "both" => {
+                output::write_svg(&args.output, name, &svg_str)?;
+                #[cfg(feature = "png")]
+                {
+                    output::write_png(&args.output, name, &svg_str)?;
+                }
             }
-        }
-        "both" => {
-            output::write_svg(&args.output, &args.theme, &svg_str)?;
-            #[cfg(feature = "png")]
-            {
-                output::write_png(&args.output, &args.theme, &svg_str)?;
+            _ => {
+                output::write_svg(&args.output, name, &svg_str)?;
             }
-        }
-        _ => {
-            output::write_svg(&args.output, &args.theme, &svg_str)?;
         }
     }
 

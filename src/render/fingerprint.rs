@@ -88,10 +88,10 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
             w / 2.0,
             h - 15.0,
             &format!(
-                "{} repos | {} stars | {} commits | {} languages",
+                "{} repos | {} stars | {} contributions | {} languages",
                 ctx.total_repos,
                 ctx.total_stars,
-                ctx.total_commits,
+                ctx.total_contributions,
                 ctx.top_languages.len()
             ),
         )

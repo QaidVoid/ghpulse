@@ -1,11 +1,12 @@
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use ureq::http::Response;
-use ureq::http::header::AUTHORIZATION;
+use ureq::http::header::{AUTHORIZATION, USER_AGENT};
 
 const API_BASE: &str = "https://api.github.com";
+const USER_AGENT_VALUE: &str = concat!("ghpulse/", env!("CARGO_PKG_VERSION"));
 
 /// Rate-limit state parsed from response headers.
 #[derive(Debug, Default)]
@@ -41,19 +42,55 @@ impl Client {
         format!("Bearer {}", self.token)
     }
 
-    /// Send an authenticated GraphQL POST request.
-    pub fn graphql_post(&self, body: &str) -> Result<Response<ureq::Body>> {
-        self.rate_limit_check();
+    /// Send an authenticated GraphQL POST request and parse the response body
+    /// as JSON. Retries 5xx and 429 responses with exponential backoff so
+    /// transient gateway errors (502 Bad Gateway is common from GitHub) don't
+    /// abort a long collection run.
+    pub fn graphql_query(&self, body: &str) -> Result<serde_json::Value> {
+        const MAX_RETRIES: u32 = 5;
+        let mut attempt: u32 = 0;
 
-        let resp = self
-            .agent
-            .post(&format!("{API_BASE}/graphql"))
-            .header(AUTHORIZATION, self.auth_header_value())
-            .content_type("application/json")
-            .send(body)?;
+        loop {
+            self.rate_limit_check();
 
-        self.update_rate_limit(&resp);
-        Ok(resp)
+            let resp = self
+                .agent
+                .post(&format!("{API_BASE}/graphql"))
+                .header(AUTHORIZATION, self.auth_header_value())
+                .header(USER_AGENT, USER_AGENT_VALUE)
+                .content_type("application/json")
+                .send(body)?;
+
+            self.update_rate_limit(&resp);
+
+            let status = resp.status();
+            let code = status.as_u16();
+            let text = resp
+                .into_body()
+                .read_to_string()
+                .context("failed to read GraphQL response body")?;
+
+            let retriable = code == 429 || (500..=599).contains(&code);
+            if retriable && attempt < MAX_RETRIES {
+                attempt += 1;
+                let backoff = Duration::from_secs(2u64.pow(attempt));
+                tracing::warn!(
+                    "GraphQL HTTP {status}, retry {attempt}/{MAX_RETRIES} in {backoff:?}"
+                );
+                std::thread::sleep(backoff);
+                continue;
+            }
+
+            if !status.is_success() {
+                let snippet: String = text.chars().take(500).collect();
+                anyhow::bail!("GraphQL HTTP {status}: {snippet}");
+            }
+
+            return serde_json::from_str(&text).with_context(|| {
+                let snippet: String = text.chars().take(500).collect();
+                format!("invalid JSON from GraphQL (status {status}): {snippet}")
+            });
+        }
     }
 
     /// Send an authenticated REST GET request with retry logic.
@@ -68,6 +105,7 @@ impl Client {
                 .agent
                 .get(&url)
                 .header(AUTHORIZATION, self.auth_header_value())
+                .header(USER_AGENT, USER_AGENT_VALUE)
                 .call()?;
 
             self.update_rate_limit(&resp);
