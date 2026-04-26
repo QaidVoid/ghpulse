@@ -1,4 +1,5 @@
 mod config;
+mod github;
 
 use anyhow::Result;
 use clap::Parser;
@@ -20,20 +21,15 @@ fn init_tracing(args: &Args) {
         .init();
 }
 
-fn run(args: Args) -> Result<()> {
-    init_tracing(&args);
-
-    tracing::info!("ghpulse starting");
-
-    // TODO: Phase 1 — data collection
-    // TODO: Phase 2 — rendering
-    // TODO: Phase 3 — output
-
+fn run(_args: Args) -> Result<()> {
+    // TODO: data collection, rendering, output
     Ok(())
 }
 
 fn main() {
     let args = Args::parse();
+
+    init_tracing(&args);
 
     if let Err(e) = run(args) {
         eprintln!("error: {e:#}");
