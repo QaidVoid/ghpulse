@@ -76,7 +76,19 @@ fn glob_match(pattern: &str, text: &str) -> bool {
     }
 }
 
+/// Sum language bytes across repos. Prefer owned/admined repos so a single
+/// large drive-by contribution (e.g. someone else's huge Nix config you fixed
+/// a typo in) doesn't dominate the user's language profile. Falls back to all
+/// repos if nothing matches.
 fn compute_language_totals(repos: &[Repo]) -> HashMap<String, u64> {
+    let owned_total = sum_languages(repos.iter().filter(|r| r.is_owner));
+    if !owned_total.is_empty() {
+        return owned_total;
+    }
+    sum_languages(repos.iter())
+}
+
+fn sum_languages<'a>(repos: impl Iterator<Item = &'a Repo>) -> HashMap<String, u64> {
     let mut totals = HashMap::new();
     for repo in repos {
         for lang in &repo.languages {
