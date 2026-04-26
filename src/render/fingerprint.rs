@@ -146,7 +146,7 @@ fn build_dimensions(ctx: &RenderContext) -> Vec<Dimension> {
     });
 
     // One bar per top language.
-    for lang in ctx.top_languages.iter().take(8) {
+    for lang in ctx.top_languages.iter().take(12) {
         dims.push(Dimension {
             color: lang.color.clone(),
             value: (lang.percentage / 100.0).min(1.0),

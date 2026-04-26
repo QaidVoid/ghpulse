@@ -89,7 +89,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     );
     y += line_h;
 
-    for lang in ctx.top_languages.iter().take(6) {
+    for lang in ctx.top_languages.iter().take(12) {
         let bar_width = (lang.percentage / 100.0 * (w - 200.0)).max(2.0);
         doc.add(
             doc.text(x, y, &format!("{:>12}", lang.name))

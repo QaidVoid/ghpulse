@@ -96,10 +96,18 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         .opacity(0.6),
     );
 
-    // Top languages legend.
-    let legend_y = theme.height as f64 - 40.0;
-    let mut legend_x = 20.0;
-    for lang in ctx.top_languages.iter().take(5) {
+    // Top languages legend, wrapping to a second row if needed.
+    let legend_left = 20.0;
+    let legend_right = theme.width as f64 - 20.0;
+    let row_h = 14.0;
+    let mut legend_x = legend_left;
+    let mut legend_y = theme.height as f64 - 40.0;
+    for lang in ctx.top_languages.iter().take(12) {
+        let w = lang.name.len() as f64 * 6.5 + 20.0;
+        if legend_x + w > legend_right {
+            legend_x = legend_left;
+            legend_y += row_h;
+        }
         doc.add(doc.circle(legend_x, legend_y, 4.0).fill(&lang.color));
         doc.add(
             doc.text(legend_x + 8.0, legend_y + 4.0, &lang.name)
@@ -108,7 +116,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
                 .font_family(&theme.font)
                 .opacity(0.7),
         );
-        legend_x += lang.name.len() as f64 * 6.5 + 20.0;
+        legend_x += w;
     }
 
     Ok(doc.to_string())
