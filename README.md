@@ -108,7 +108,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: qaidvoid/ghpulse-action@v1
+      - uses: QaidVoid/ghpulse@v1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           theme: nebula
@@ -191,7 +191,7 @@ The default "Public Repositories (read-only)" preset covers most use cases if yo
 ## Build from source
 
 ```bash
-git clone https://github.com/qaidvoid/ghpulse.git
+git clone https://github.com/QaidVoid/ghpulse.git
 cd ghpulse
 cargo build --release
 

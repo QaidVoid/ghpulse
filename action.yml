@@ -1,0 +1,90 @@
+name: "ghpulse"
+description: "Generate unique GitHub stats visualizations as generative SVG art"
+author: "QaidVoid"
+
+inputs:
+  token:
+    description: "GitHub personal access token"
+    required: true
+  theme:
+    description: "Visualization theme (nebula, nebula-light, terminal, radar, heatmap, fingerprint)"
+    default: "nebula"
+  output-dir:
+    description: "Directory to write output files"
+    default: "./"
+  format:
+    description: "Output format (svg, png, both)"
+    default: "svg"
+  exclude-repos:
+    description: "Comma-separated glob patterns of repos to exclude"
+    required: false
+  exclude-langs:
+    description: "Comma-separated language names to exclude"
+    required: false
+  exclude-private:
+    description: "Exclude private repositories"
+    default: "false"
+  exclude-archived:
+    description: "Exclude archived repositories"
+    default: "false"
+  min-stars:
+    description: "Minimum stars to include a repo"
+    required: false
+  min-commits:
+    description: "Minimum commits to include a repo"
+    required: false
+  max-retries:
+    description: "Max retries for flaky API endpoints"
+    default: "10"
+  theme-dir:
+    description: "Load additional themes from a directory"
+    required: false
+  version:
+    description: "ghpulse version to use"
+    default: "latest"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install ghpulse
+      shell: bash
+      run: ${{ github.action_path }}/install.sh
+      env:
+        GHPULSE_VERSION: ${{ inputs.version }}
+
+    - name: Generate visualizations
+      shell: bash
+      run: |
+        ARGS=(
+          --token "${{ inputs.token }}"
+          --theme "${{ inputs.theme }}"
+          --output "${{ inputs.output-dir }}"
+          --format "${{ inputs.format }}"
+          --max-retries "${{ inputs.max-retries }}"
+        )
+        if [ -n "${{ inputs.exclude-repos }}" ]; then
+          ARGS+=(--exclude-repos "${{ inputs.exclude-repos }}")
+        fi
+        if [ -n "${{ inputs.exclude-langs }}" ]; then
+          ARGS+=(--exclude-langs "${{ inputs.exclude-langs }}")
+        fi
+        if [ "${{ inputs.exclude-private }}" = "true" ]; then
+          ARGS+=(--exclude-private)
+        fi
+        if [ "${{ inputs.exclude-archived }}" = "true" ]; then
+          ARGS+=(--exclude-archived)
+        fi
+        if [ -n "${{ inputs.min-stars }}" ]; then
+          ARGS+=(--min-stars "${{ inputs.min-stars }}")
+        fi
+        if [ -n "${{ inputs.min-commits }}" ]; then
+          ARGS+=(--min-commits "${{ inputs.min-commits }}")
+        fi
+        if [ -n "${{ inputs.theme-dir }}" ]; then
+          ARGS+=(--theme-dir "${{ inputs.theme-dir }}")
+        fi
+        ghpulse "${ARGS[@]}"
+
+branding:
+  icon: "activity"
+  color: "purple"
