@@ -32,28 +32,28 @@ impl Svg {
         self.defs.push(content.to_string());
     }
 
-    /// Add a `<rect>` element.
-    pub fn rect(&mut self, x: f64, y: f64, w: f64, h: f64) -> ElementBuilder {
+    /// Create a `<rect>` element builder.
+    pub fn rect(&self, x: f64, y: f64, w: f64, h: f64) -> ElementBuilder {
         ElementBuilder::new(format!(r#"<rect x="{x}" y="{y}" width="{w}" height="{h}""#))
     }
 
-    /// Add a `<circle>` element.
-    pub fn circle(&mut self, cx: f64, cy: f64, r: f64) -> ElementBuilder {
+    /// Create a `<circle>` element builder.
+    pub fn circle(&self, cx: f64, cy: f64, r: f64) -> ElementBuilder {
         ElementBuilder::new(format!(r#"<circle cx="{cx}" cy="{cy}" r="{r}""#))
     }
 
-    /// Add a `<line>` element.
-    pub fn line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64) -> ElementBuilder {
+    /// Create a `<line>` element builder.
+    pub fn line(&self, x1: f64, y1: f64, x2: f64, y2: f64) -> ElementBuilder {
         ElementBuilder::new(format!(r#"<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}""#))
     }
 
-    /// Add a `<text>` element.
-    pub fn text(&mut self, x: f64, y: f64, content: &str) -> ElementBuilder {
+    /// Create a `<text>` element builder.
+    pub fn text(&self, x: f64, y: f64, content: &str) -> ElementBuilder {
         ElementBuilder::new(format!(r#"<text x="{x}" y="{y}"">{content}</text>"#))
     }
 
-    /// Add a `<path>` element.
-    pub fn path(&mut self, d: &str) -> ElementBuilder {
+    /// Create a `<path>` element builder.
+    pub fn path(&self, d: &str) -> ElementBuilder {
         ElementBuilder::new(format!(r#"<path d="{d}""#))
     }
 
