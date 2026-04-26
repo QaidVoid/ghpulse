@@ -79,7 +79,28 @@ fn run(args: Args) -> Result<()> {
     let svg_str = render::render(&ctx, &theme)?;
 
     // Output.
-    output::write_svg(&args.output, &args.theme, &svg_str)?;
+    match args.format.as_str() {
+        "png" => {
+            #[cfg(feature = "png")]
+            {
+                output::write_png(&args.output, &args.theme, &svg_str)?;
+            }
+            #[cfg(not(feature = "png"))]
+            {
+                anyhow::bail!("PNG export requires the 'png' feature (build with --features png)");
+            }
+        }
+        "both" => {
+            output::write_svg(&args.output, &args.theme, &svg_str)?;
+            #[cfg(feature = "png")]
+            {
+                output::write_png(&args.output, &args.theme, &svg_str)?;
+            }
+        }
+        _ => {
+            output::write_svg(&args.output, &args.theme, &svg_str)?;
+        }
+    }
 
     Ok(())
 }
