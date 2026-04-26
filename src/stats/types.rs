@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 
 /// A programming language with size info from GitHub.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct Language {
     pub name: String,
     pub size: u64,
@@ -13,7 +12,6 @@ pub struct Language {
 
 /// A repository with relevant stats.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct Repo {
     pub name: String,
     pub owner: String,
@@ -35,7 +33,6 @@ impl Repo {
 
 /// Per-year contribution breakdown.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct ContributionYear {
     pub year: i32,
     pub total_count: u32,
@@ -48,7 +45,6 @@ pub struct ContributionYear {
 
 /// Aggregated stats for a GitHub user.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct Stats {
     pub user: User,
     pub contribution_years: Vec<ContributionYear>,
@@ -58,7 +54,6 @@ pub struct Stats {
 
 /// Basic GitHub user info.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct User {
     pub login: String,
     pub name: Option<String>,

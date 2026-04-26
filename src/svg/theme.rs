@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 /// Complete theme definition loaded from TOML.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct Theme {
     pub name: String,
     pub background: String,
@@ -23,7 +22,6 @@ pub struct Theme {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct StarConfig {
     #[serde(default = "default_min_radius")]
     pub min_radius: f64,
@@ -44,7 +42,6 @@ impl Default for StarConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct ConnectionConfig {
     #[serde(default = "default_opacity")]
     pub opacity: f64,
@@ -62,7 +59,6 @@ impl Default for ConnectionConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct AnimationConfig {
     #[serde(default = "default_true")]
     pub twinkle: bool,

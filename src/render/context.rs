@@ -4,7 +4,7 @@ use crate::stats::types::{ContributionYear, Stats};
 use crate::svg::theme::Theme;
 
 /// Normalized data prepared for rendering.
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub struct RenderContext {
     pub user_login: String,
     pub user_name: String,
@@ -19,7 +19,7 @@ pub struct RenderContext {
 }
 
 /// Normalized repo data for rendering.
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub struct RepoContext {
     pub name: String,
     pub full_name: String,
@@ -33,7 +33,6 @@ pub struct RepoContext {
 }
 
 /// Normalized language data for rendering.
-#[allow(dead_code)]
 pub struct LanguageContext {
     pub name: String,
     pub size: u64,

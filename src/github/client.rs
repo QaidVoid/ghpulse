@@ -15,14 +15,12 @@ struct RateLimit {
 }
 
 /// GitHub API HTTP client with auth and rate-limit awareness.
-#[allow(dead_code)]
 pub struct Client {
     agent: ureq::Agent,
     token: String,
     rate_limit: Mutex<RateLimit>,
 }
 
-#[allow(dead_code)]
 impl Client {
     /// Create a new client with the given GitHub personal access token.
     pub fn new(token: String) -> Self {

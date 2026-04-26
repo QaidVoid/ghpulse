@@ -1,7 +1,6 @@
 pub mod theme;
 
 /// SVG document builder with programmatic element creation.
-#[allow(dead_code)]
 pub struct Svg {
     width: u32,
     height: u32,
@@ -10,7 +9,6 @@ pub struct Svg {
     defs: Vec<String>,
 }
 
-#[allow(dead_code)]
 impl Svg {
     pub fn new(width: u32, height: u32) -> Self {
         Self {
@@ -60,16 +58,19 @@ impl Svg {
     }
 
     /// Create a `<path>` element builder.
+    #[expect(dead_code)]
     pub fn path(&self, d: &str) -> ElementBuilder {
         ElementBuilder::new_self_closing(format!(r#"<path d="{d}""#))
     }
 
     /// Add a `<g>` (group) element with inner content.
+    #[expect(dead_code)]
     pub fn group(&mut self, attrs: &str, content: &str) {
         self.elements.push(format!("<g {attrs}>{content}</g>"));
     }
 
     /// Add raw SVG content.
+    #[expect(dead_code)]
     pub fn raw(&mut self, svg: &str) {
         self.elements.push(svg.to_string());
     }
@@ -122,7 +123,6 @@ impl Svg {
 ///
 /// Handles both self-closing elements (like `<rect/>`) and paired elements
 /// (like `<text>...</text>`).
-#[allow(dead_code)]
 pub struct ElementBuilder {
     /// Opening tag with attributes being built (e.g. `<rect x="0" ...`).
     opening: String,
@@ -130,7 +130,6 @@ pub struct ElementBuilder {
     closing: String,
 }
 
-#[allow(dead_code)]
 impl ElementBuilder {
     /// Create a self-closing element (rect, circle, line, path).
     pub(crate) fn new_self_closing(tag: String) -> Self {
@@ -198,6 +197,7 @@ impl ElementBuilder {
         self
     }
 
+    #[expect(dead_code)]
     pub fn transform(mut self, t: &str) -> Self {
         self.opening.push_str(&format!(r#" transform="{t}""#));
         self

@@ -24,14 +24,14 @@ struct UserNode {
 }
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
+#[expect(dead_code)]
 struct ContributionsCollection {
     contribution_years: Vec<i32>,
     contribution_calendar: ContributionCalendar,
 }
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
+#[expect(dead_code)]
 struct ContributionCalendar {
     total_contributions: u32,
 }

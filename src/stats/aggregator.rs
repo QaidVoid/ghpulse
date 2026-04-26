@@ -4,7 +4,6 @@ use crate::config::Args;
 use crate::stats::types::{Repo, Stats};
 
 /// Apply CLI filters to a Stats struct and compute language totals.
-#[allow(dead_code)]
 pub fn aggregate(mut stats: Stats, args: &Args) -> Stats {
     stats.repos.retain(|r| passes_filters(r, args));
 
@@ -25,7 +24,6 @@ pub fn aggregate(mut stats: Stats, args: &Args) -> Stats {
     stats
 }
 
-#[allow(dead_code)]
 fn passes_filters(repo: &Repo, args: &Args) -> bool {
     if args.exclude_private && repo.is_private {
         return false;

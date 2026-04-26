@@ -7,7 +7,7 @@ use crate::github::client::Client;
 #[derive(Debug, Deserialize)]
 pub struct TrafficViews {
     pub count: u64,
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub uniques: u64,
 }
 
@@ -21,28 +21,26 @@ pub fn fetch_traffic(client: &Client, owner: &str, repo: &str, max_retries: u32)
 
 /// Contributor stats (lines added/removed). Notoriously flaky.
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct ContributorStats {
     pub author: Option<Author>,
     pub weeks: Vec<WeekStats>,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct Author {
     pub login: String,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct WeekStats {
     pub a: u64,
     pub d: u64,
+    #[expect(dead_code)]
     pub c: u64,
 }
 
 /// Fetch lines added/removed for a specific author in a repo.
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub fn fetch_contributor_stats(
     client: &Client,
     owner: &str,
@@ -69,14 +67,14 @@ pub fn fetch_contributor_stats(
 
 /// Email addresses for the authenticated user.
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub struct UserEmail {
     pub email: String,
     pub primary: bool,
 }
 
 /// Fetch email addresses for the authenticated user.
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub fn fetch_emails(client: &Client, max_retries: u32) -> Result<Vec<UserEmail>> {
     let resp = client.get_with_retry("/user/emails", max_retries)?;
     let emails: Vec<UserEmail> = serde_json::from_reader(resp.into_body().as_reader())?;
