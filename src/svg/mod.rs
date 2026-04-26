@@ -1,3 +1,5 @@
+pub mod theme;
+
 /// SVG document builder with programmatic element creation.
 #[allow(dead_code)]
 pub struct Svg {

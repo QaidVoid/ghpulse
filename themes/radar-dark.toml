@@ -1,0 +1,20 @@
+name = "Radar (Dark)"
+background = "#0d1117"
+foreground = "#c9d1d9"
+accent = "#58a6ff"
+font = "JetBrains Mono, monospace"
+width = 600
+height = 600
+
+[star]
+min_radius = 3
+max_radius = 8
+glow = false
+
+[connection]
+opacity = 0.2
+width = 1.0
+
+[animation]
+twinkle = false
+duration = "2s"

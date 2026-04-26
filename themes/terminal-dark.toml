@@ -1,0 +1,20 @@
+name = "Terminal (Dark)"
+background = "#0a0a0a"
+foreground = "#33ff33"
+accent = "#ffb000"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+
+[star]
+min_radius = 2
+max_radius = 10
+glow = true
+
+[connection]
+opacity = 0.1
+width = 0.3
+
+[animation]
+twinkle = false
+duration = "2s"

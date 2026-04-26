@@ -1,0 +1,20 @@
+name = "Nebula (Light)"
+background = "#f6f8fa"
+foreground = "#24292f"
+accent = "#0969da"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+
+[star]
+min_radius = 2
+max_radius = 12
+glow = true
+
+[connection]
+opacity = 0.15
+width = 0.5
+
+[animation]
+twinkle = true
+duration = "4s"
