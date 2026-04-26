@@ -1,6 +1,7 @@
 mod config;
 mod github;
 mod stats;
+mod svg;
 
 use anyhow::Result;
 use clap::Parser;
