@@ -1,0 +1,11 @@
+name = "Synthwave"
+background = "#0a0118"
+foreground = "#f0a8e8"
+accent = "#ff2bd6"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+
+[animation]
+twinkle = false
+duration = "0s"

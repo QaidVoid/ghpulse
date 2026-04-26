@@ -65,6 +65,14 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
                 .font_family(&theme.font)
                 .text_anchor("middle"),
         );
+        doc.add(
+            doc.text(lx, ly + 16.0, &format!("{:.1}%", lang.percentage))
+                .fill(&theme.foreground)
+                .font_size(8.0)
+                .font_family(&theme.font)
+                .text_anchor("middle")
+                .opacity(0.6),
+        );
     }
 
     // Draw data polygon.

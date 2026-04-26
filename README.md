@@ -38,6 +38,14 @@ Enhanced contribution heatmap. Like GitHub's contribution graph but denser, with
 
 A unique visual hash of your developer identity. Horizontal bars arranged like an audio waveform. The pattern is deterministic — same data always produces the same image.
 
+### `synthwave`
+
+Retrowave sunset: striped neon sun, magenta perspective grid receding to the vanishing point, and language pillars rising from the horizon like an EQ display.
+
+### `prism`
+
+White light enters a glass prism on the left and refracts into a fan of language-colored beams on the right. Each beam's thickness is proportional to that language's share.
+
 ## Usage
 
 ### CLI

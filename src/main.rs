@@ -50,15 +50,7 @@ fn run(args: Args) -> Result<()> {
 
     // List modes.
     if args.list_themes {
-        let themes = [
-            "nebula",
-            "nebula-light",
-            "terminal",
-            "radar",
-            "heatmap",
-            "fingerprint",
-        ];
-        for t in &themes {
+        for t in svg::theme::BUILTIN_THEMES {
             println!("{t}");
         }
         if let Some(dir) = &args.theme_dir
@@ -83,15 +75,11 @@ fn run(args: Args) -> Result<()> {
     }
 
     // Render.
-    let theme_names = if args.theme == "all" {
-        vec![
-            "nebula".to_string(),
-            "nebula-light".to_string(),
-            "terminal".to_string(),
-            "radar".to_string(),
-            "heatmap".to_string(),
-            "fingerprint".to_string(),
-        ]
+    let theme_names: Vec<String> = if args.theme == "all" {
+        svg::theme::BUILTIN_THEMES
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect()
     } else {
         vec![args.theme.clone()]
     };

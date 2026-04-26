@@ -106,6 +106,18 @@ pub fn from_file(path: &str) -> anyhow::Result<Theme> {
     from_toml(&content)
 }
 
+/// Built-in theme names, in the order rendered for `--theme all`.
+pub const BUILTIN_THEMES: &[&str] = &[
+    "nebula",
+    "nebula-light",
+    "terminal",
+    "radar",
+    "heatmap",
+    "fingerprint",
+    "synthwave",
+    "prism",
+];
+
 /// Get a built-in theme by name. Returns the dark variant by default.
 pub fn builtin(name: &str) -> anyhow::Result<Theme> {
     match name {
@@ -117,6 +129,8 @@ pub fn builtin(name: &str) -> anyhow::Result<Theme> {
         "fingerprint" | "fingerprint-dark" => {
             from_toml(include_str!("../../themes/fingerprint-dark.toml"))
         }
+        "synthwave" => from_toml(include_str!("../../themes/synthwave.toml")),
+        "prism" => from_toml(include_str!("../../themes/prism.toml")),
         _ => anyhow::bail!("unknown theme: {name}"),
     }
 }

@@ -1,0 +1,11 @@
+name = "Prism"
+background = "#0c0a18"
+foreground = "#e6e1f0"
+accent = "#ffffff"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+
+[animation]
+twinkle = false
+duration = "0s"
