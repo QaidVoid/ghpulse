@@ -3,7 +3,6 @@ use anyhow::Result;
 use crate::render::context::RenderContext;
 use crate::svg::theme::Theme;
 use crate::svg::{ElementBuilder, Svg};
-
 /// Render the spider/radar chart visualization.
 pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     let mut doc = Svg::new(theme.width, theme.height);
@@ -35,7 +34,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         let r = max_r * (ring as f64 / 4.0);
         let pts = polygon_points(cx, cy, r, n);
         doc.add(
-            ElementBuilder::new(format!(r#"<polygon points="{pts}""#))
+            ElementBuilder::new_self_closing(format!(r#"<polygon points="{pts}""#))
                 .fill("none")
                 .stroke(&theme.foreground)
                 .stroke_width(0.3)
@@ -83,12 +82,12 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     let data_str = data_pts.join(" ");
 
     doc.add(
-        ElementBuilder::new(format!(r#"<polygon points="{data_str}""#))
+        ElementBuilder::new_self_closing(format!(r#"<polygon points="{data_str}""#))
             .fill(&theme.accent)
             .opacity(0.2),
     );
     doc.add(
-        ElementBuilder::new(format!(r#"<polygon points="{data_str}""#))
+        ElementBuilder::new_self_closing(format!(r#"<polygon points="{data_str}""#))
             .fill("none")
             .stroke(&theme.accent)
             .stroke_width(1.5),

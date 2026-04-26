@@ -27,7 +27,7 @@ fn init_tracing(args: &Args) {
 
 fn run(args: Args) -> Result<()> {
     // Load stats from cache or collect from GitHub API.
-    let stats = if let Some(path) = &args.from_json {
+    let raw_stats = if let Some(path) = &args.from_json {
         stats::collector::from_json(path)?
     } else {
         let token = args.token.as_deref().ok_or_else(|| {
@@ -35,8 +35,7 @@ fn run(args: Args) -> Result<()> {
         })?;
 
         let client = github::client::Client::new(token.to_string());
-        let mut stats = stats::collector::collect(&client, args.max_retries)?;
-        stats = stats::aggregator::aggregate(stats, &args);
+        let stats = stats::collector::collect(&client, args.max_retries)?;
 
         if let Some(path) = &args.dump_json {
             stats::collector::dump_json(&stats, path)?;
@@ -45,6 +44,9 @@ fn run(args: Args) -> Result<()> {
 
         stats
     };
+
+    // Always run aggregation (filtering, sorting, language totals).
+    let stats = stats::aggregator::aggregate(raw_stats, &args);
 
     // List modes.
     if args.list_themes {

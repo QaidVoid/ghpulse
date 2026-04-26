@@ -34,27 +34,34 @@ impl Svg {
 
     /// Create a `<rect>` element builder.
     pub fn rect(&self, x: f64, y: f64, w: f64, h: f64) -> ElementBuilder {
-        ElementBuilder::new(format!(r#"<rect x="{x}" y="{y}" width="{w}" height="{h}""#))
+        ElementBuilder::new_self_closing(format!(
+            r#"<rect x="{x}" y="{y}" width="{w}" height="{h}""#
+        ))
     }
 
     /// Create a `<circle>` element builder.
     pub fn circle(&self, cx: f64, cy: f64, r: f64) -> ElementBuilder {
-        ElementBuilder::new(format!(r#"<circle cx="{cx}" cy="{cy}" r="{r}""#))
+        ElementBuilder::new_self_closing(format!(r#"<circle cx="{cx}" cy="{cy}" r="{r}""#))
     }
 
     /// Create a `<line>` element builder.
     pub fn line(&self, x1: f64, y1: f64, x2: f64, y2: f64) -> ElementBuilder {
-        ElementBuilder::new(format!(r#"<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}""#))
+        ElementBuilder::new_self_closing(format!(
+            r#"<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}""#
+        ))
     }
 
-    /// Create a `<text>` element builder.
+    /// Create a `<text>` element builder with inline content.
     pub fn text(&self, x: f64, y: f64, content: &str) -> ElementBuilder {
-        ElementBuilder::new(format!(r#"<text x="{x}" y="{y}"">{content}</text>"#))
+        ElementBuilder::new_paired(
+            format!(r#"<text x="{x}" y="{y}""#),
+            format!("{content}</text>"),
+        )
     }
 
     /// Create a `<path>` element builder.
     pub fn path(&self, d: &str) -> ElementBuilder {
-        ElementBuilder::new(format!(r#"<path d="{d}""#))
+        ElementBuilder::new_self_closing(format!(r#"<path d="{d}""#))
     }
 
     /// Add a `<g>` (group) element with inner content.
@@ -112,79 +119,101 @@ impl Svg {
 }
 
 /// Builder for adding attributes to an SVG element before closing it.
+///
+/// Handles both self-closing elements (like `<rect/>`) and paired elements
+/// (like `<text>...</text>`).
 #[allow(dead_code)]
 pub struct ElementBuilder {
-    inner: String,
+    /// Opening tag with attributes being built (e.g. `<rect x="0" ...`).
+    opening: String,
+    /// Closing portion: either empty (self-closing) or `>content</tag>`.
+    closing: String,
 }
 
 #[allow(dead_code)]
 impl ElementBuilder {
-    pub(crate) fn new(opening: String) -> Self {
-        Self { inner: opening }
+    /// Create a self-closing element (rect, circle, line, path).
+    pub(crate) fn new_self_closing(tag: String) -> Self {
+        Self {
+            opening: tag,
+            closing: String::new(),
+        }
+    }
+
+    /// Create a paired element (text, etc).
+    pub(crate) fn new_paired(tag: String, closing: String) -> Self {
+        Self {
+            opening: tag,
+            closing,
+        }
     }
 
     pub fn fill(mut self, color: &str) -> Self {
-        self.inner.push_str(&format!(r#" fill="{color}""#));
+        self.opening.push_str(&format!(r#" fill="{color}""#));
         self
     }
 
     pub fn stroke(mut self, color: &str) -> Self {
-        self.inner.push_str(&format!(r#" stroke="{color}""#));
+        self.opening.push_str(&format!(r#" stroke="{color}""#));
         self
     }
 
     pub fn stroke_width(mut self, w: f64) -> Self {
-        self.inner.push_str(&format!(r#" stroke-width="{w}""#));
+        self.opening.push_str(&format!(r#" stroke-width="{w}""#));
         self
     }
 
     pub fn opacity(mut self, o: f64) -> Self {
-        self.inner.push_str(&format!(r#" opacity="{o}""#));
+        self.opening.push_str(&format!(r#" opacity="{o}""#));
         self
     }
 
     pub fn rx(mut self, r: f64) -> Self {
-        self.inner.push_str(&format!(r#" rx="{r}""#));
+        self.opening.push_str(&format!(r#" rx="{r}""#));
         self
     }
 
     pub fn font_size(mut self, s: f64) -> Self {
-        self.inner.push_str(&format!(r#" font-size="{s}""#));
+        self.opening.push_str(&format!(r#" font-size="{s}""#));
         self
     }
 
     pub fn font_family(mut self, f: &str) -> Self {
-        self.inner.push_str(&format!(r#" font-family="{f}""#));
+        self.opening.push_str(&format!(r#" font-family="{f}""#));
         self
     }
 
     pub fn text_anchor(mut self, a: &str) -> Self {
-        self.inner.push_str(&format!(r#" text-anchor="{a}""#));
+        self.opening.push_str(&format!(r#" text-anchor="{a}""#));
         self
     }
 
     pub fn class(mut self, c: &str) -> Self {
-        self.inner.push_str(&format!(r#" class="{c}""#));
+        self.opening.push_str(&format!(r#" class="{c}""#));
         self
     }
 
     pub fn filter(mut self, f: &str) -> Self {
-        self.inner.push_str(&format!(r#" filter="url(#{f})""#));
+        self.opening.push_str(&format!(r#" filter="url(#{f})""#));
         self
     }
 
     pub fn transform(mut self, t: &str) -> Self {
-        self.inner.push_str(&format!(r#" transform="{t}""#));
+        self.opening.push_str(&format!(r#" transform="{t}""#));
         self
     }
 
     pub fn attr(mut self, key: &str, val: &str) -> Self {
-        self.inner.push_str(&format!(r#" {key}="{val}""#));
+        self.opening.push_str(&format!(r#" {key}="{val}""#));
         self
     }
 
     /// Finalize and return the SVG element string.
     pub fn build(self) -> String {
-        format!("{}/>", self.inner)
+        if self.closing.is_empty() {
+            format!("{}/>", self.opening)
+        } else {
+            format!("{}>{}", self.opening, self.closing)
+        }
     }
 }
