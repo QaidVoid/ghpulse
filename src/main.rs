@@ -1,5 +1,6 @@
 mod config;
 mod github;
+mod stats;
 
 use anyhow::Result;
 use clap::Parser;
