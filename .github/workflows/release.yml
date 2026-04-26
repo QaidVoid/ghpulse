@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install musl target
+        run: rustup target add x86_64-unknown-linux-musl
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build static binary
+        run: cargo build --release --target x86_64-unknown-linux-musl
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/x86_64-unknown-linux-musl/release/ghpulse dist/ghpulse
+          tar -czf ghpulse-x86_64-unknown-linux-musl.tar.gz -C dist ghpulse
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ghpulse-x86_64-unknown-linux-musl.tar.gz
