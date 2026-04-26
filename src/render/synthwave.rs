@@ -77,7 +77,10 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
 
     // Ground covers everything below the horizon (including any sub-pixel
     // bleed from the sun) for a crisp horizon line.
-    doc.add(doc.rect(0.0, horizon, w, h - horizon).fill("url(#sw-ground)"));
+    doc.add(
+        doc.rect(0.0, horizon, w, h - horizon)
+            .fill("url(#sw-ground)"),
+    );
 
     // Perspective grid below the horizon. Vanishing point at the sun base.
     let vp_x = sun_cx;

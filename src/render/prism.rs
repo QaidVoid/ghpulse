@@ -60,13 +60,11 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         </linearGradient>"##,
     );
     doc.add(
-        crate::svg::ElementBuilder::new_self_closing(format!(
-            r##"<polygon points="{triangle}""##
-        ))
-        .fill("url(#prism-glass)")
-        .stroke("#ffffff")
-        .stroke_width(1.2)
-        .opacity(0.85),
+        crate::svg::ElementBuilder::new_self_closing(format!(r##"<polygon points="{triangle}""##))
+            .fill("url(#prism-glass)")
+            .stroke("#ffffff")
+            .stroke_width(1.2)
+            .opacity(0.85),
     );
 
     // Outgoing beams: one per top language, fanned vertically across the
