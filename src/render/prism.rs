@@ -72,7 +72,8 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     // Outgoing beams: one per top language, fanned vertically across the
     // right half of the canvas.
     let beam_origin_x = prism_cx + half * 0.5;
-    let beam_end_x = w - 80.0;
+    let label_right = w - 12.0;
+    let beam_end_x = w - 140.0;
     let langs: Vec<_> = ctx.top_languages.iter().take(8).collect();
     if !langs.is_empty() {
         let total_pct: f64 = langs.iter().map(|l| l.percentage).sum::<f64>().max(1.0);
@@ -113,16 +114,17 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
                 .filter("beam-glow"),
             );
 
-            // Label at the right edge.
+            // Right-aligned label so long names never clip the canvas edge.
             doc.add(
                 doc.text(
-                    beam_end_x + 8.0,
+                    label_right,
                     target_y - 1.0,
                     &format!("{} {:.1}%", lang.name, lang.percentage),
                 )
                 .fill(&theme.foreground)
                 .font_size(10.0)
                 .font_family(&theme.font)
+                .text_anchor("end")
                 .opacity(0.9),
             );
         }
