@@ -1,4 +1,16 @@
 
+## 0.1.2 — 2026-04-26
+
+### Bug Fixes
+
+- Rebalance synthwave layout and stop prism labels clipping
+- Scope language totals to owned/admined repos
+
+### Features
+
+- Add synthwave and prism themes, percentages on radar
+- Show language percentages in nebula legend
+
 ## 0.1.1 — 2026-04-26
 
 ### Bug Fixes
