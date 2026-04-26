@@ -96,21 +96,24 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         .opacity(0.6),
     );
 
-    // Top languages legend, wrapping to a second row if needed.
+    // Top languages legend with percentages, wrapping to a second row if
+    // needed. Percentages share the global language total so they sum to 100%
+    // across the visible repo set.
     let legend_left = 20.0;
     let legend_right = theme.width as f64 - 20.0;
     let row_h = 14.0;
     let mut legend_x = legend_left;
     let mut legend_y = theme.height as f64 - 40.0;
     for lang in ctx.top_languages.iter().take(12) {
-        let w = lang.name.len() as f64 * 6.5 + 20.0;
+        let label = format!("{} {:.1}%", lang.name, lang.percentage);
+        let w = label.len() as f64 * 6.5 + 20.0;
         if legend_x + w > legend_right {
             legend_x = legend_left;
             legend_y += row_h;
         }
         doc.add(doc.circle(legend_x, legend_y, 4.0).fill(&lang.color));
         doc.add(
-            doc.text(legend_x + 8.0, legend_y + 4.0, &lang.name)
+            doc.text(legend_x + 8.0, legend_y + 4.0, &label)
                 .fill(&theme.foreground)
                 .font_size(9.0)
                 .font_family(&theme.font)
