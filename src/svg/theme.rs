@@ -99,21 +99,18 @@ fn default_true() -> bool {
 }
 
 /// Load a theme from a TOML string.
-#[allow(dead_code)]
 pub fn from_toml(input: &str) -> anyhow::Result<Theme> {
     let theme: Theme = toml::from_str(input)?;
     Ok(theme)
 }
 
 /// Load a theme from a file path.
-#[allow(dead_code)]
 pub fn from_file(path: &str) -> anyhow::Result<Theme> {
     let content = std::fs::read_to_string(path)?;
     from_toml(&content)
 }
 
 /// Get a built-in theme by name. Returns the dark variant by default.
-#[allow(dead_code)]
 pub fn builtin(name: &str) -> anyhow::Result<Theme> {
     match name {
         "nebula" | "nebula-dark" => from_toml(include_str!("../../themes/nebula-dark.toml")),
@@ -126,4 +123,16 @@ pub fn builtin(name: &str) -> anyhow::Result<Theme> {
         }
         _ => anyhow::bail!("unknown theme: {name}"),
     }
+}
+
+/// Load a theme by name, checking custom dir first, then built-ins.
+pub fn load(name: &str, theme_dir: Option<&str>) -> anyhow::Result<Theme> {
+    if let Some(dir) = theme_dir {
+        let path = std::path::Path::new(dir).join(format!("{name}.toml"));
+        if path.exists() {
+            tracing::info!("loading custom theme from {}", path.display());
+            return from_file(path.to_str().unwrap_or_default());
+        }
+    }
+    builtin(name)
 }

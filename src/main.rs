@@ -61,6 +61,15 @@ fn run(args: Args) -> Result<()> {
         for t in &themes {
             println!("{t}");
         }
+        if let Some(dir) = &args.theme_dir
+            && let Ok(entries) = std::fs::read_dir(dir)
+        {
+            for entry in entries.flatten() {
+                if let Some(name) = entry.path().file_stem() {
+                    println!("{}", name.to_string_lossy());
+                }
+            }
+        }
         return Ok(());
     }
 
@@ -74,7 +83,7 @@ fn run(args: Args) -> Result<()> {
     }
 
     // Render.
-    let theme = svg::theme::builtin(&args.theme)?;
+    let theme = svg::theme::load(&args.theme, args.theme_dir.as_deref())?;
     let ctx = render::context::RenderContext::new(&stats, &theme);
     let svg_str = render::render(&ctx, &theme)?;
 
