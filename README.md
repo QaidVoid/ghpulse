@@ -163,13 +163,30 @@ ghpulse --token "$TOKEN" --theme my-theme --theme-dir ~/.config/ghpulse/themes
 
 ## Token permissions
 
+### Classic personal access token
+
 | Scope | What it unlocks |
 |-------|----------------|
 | `read:user` | Public profile, repos, contribution data, language breakdown |
 | `user:email` | Email addresses (for git attribution fallback) |
 | `repo` | Private repos, traffic/view counts, contributor line stats |
 
-A fine-grained personal access token works too. Grant **Account permissions > Read access** for user/profile data, and **Repository permissions > Read access** for repo metadata and traffic.
+Minimum for public-only data: `read:user`. Add `repo` if you want private repos and traffic.
+
+### Fine-grained personal access token
+
+Under **Account permissions**:
+- **Email addresses** — Read-only
+
+Under **Repository permissions**:
+- **Metadata** — Read-only (always required)
+- **Commit statuses** — Read-only
+- **Content** — Read-only
+
+For private repos and traffic data, set **Repository permissions**:
+- **Administration** — Read-only
+
+The default "Public Repositories (read-only)" preset covers most use cases if you only want public data.
 
 ## Build from source
 
