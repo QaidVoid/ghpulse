@@ -119,7 +119,7 @@ pub struct ElementBuilder {
 
 #[allow(dead_code)]
 impl ElementBuilder {
-    fn new(opening: String) -> Self {
+    pub(crate) fn new(opening: String) -> Self {
         Self { inner: opening }
     }
 
