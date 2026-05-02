@@ -18,6 +18,8 @@ Every GitHub stats tool generates the same boring stat cards. Rectangles with nu
 
 ## Themes
 
+Every theme ships in dark and light variants — pass `<theme>` for the dark version, `<theme>-light` for the light. Pair them with GitHub's `#gh-dark-mode-only` / `#gh-light-mode-only` URL fragments to auto-switch in your README.
+
 ### `nebula` (default)
 
 Your code universe as a cosmic map. Each repo is a star sized by contribution intensity, colored by primary language, connected by constellation lines when repos share languages. Stars pulse with a subtle twinkle animation.

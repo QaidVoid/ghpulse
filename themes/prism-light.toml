@@ -1,0 +1,12 @@
+name = "Prism (Light)"
+background = "#f6f8fa"
+foreground = "#24292f"
+accent = "#1f2328"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+is_light = true
+
+[animation]
+twinkle = false
+duration = "0s"

@@ -11,6 +11,11 @@ pub struct Theme {
     pub width: u32,
     pub height: u32,
 
+    /// True when the theme is intended for a light page background.
+    /// Renderers with hardcoded palettes use this to pick their light variant.
+    #[serde(default)]
+    pub is_light: bool,
+
     #[serde(default)]
     pub star: StarConfig,
 
@@ -111,26 +116,41 @@ pub const BUILTIN_THEMES: &[&str] = &[
     "nebula",
     "nebula-light",
     "terminal",
+    "terminal-light",
     "radar",
+    "radar-light",
     "heatmap",
+    "heatmap-light",
     "fingerprint",
+    "fingerprint-light",
     "synthwave",
+    "synthwave-light",
     "prism",
+    "prism-light",
 ];
 
-/// Get a built-in theme by name. Returns the dark variant by default.
+/// Get a built-in theme by name. Bare names (e.g. `nebula`) map to the dark
+/// variant; the explicit `-dark` and `-light` suffixes both work.
 pub fn builtin(name: &str) -> anyhow::Result<Theme> {
     match name {
         "nebula" | "nebula-dark" => from_toml(include_str!("../../themes/nebula-dark.toml")),
         "nebula-light" => from_toml(include_str!("../../themes/nebula-light.toml")),
         "terminal" | "terminal-dark" => from_toml(include_str!("../../themes/terminal-dark.toml")),
+        "terminal-light" => from_toml(include_str!("../../themes/terminal-light.toml")),
         "radar" | "radar-dark" => from_toml(include_str!("../../themes/radar-dark.toml")),
+        "radar-light" => from_toml(include_str!("../../themes/radar-light.toml")),
         "heatmap" | "heatmap-dark" => from_toml(include_str!("../../themes/heatmap-dark.toml")),
+        "heatmap-light" => from_toml(include_str!("../../themes/heatmap-light.toml")),
         "fingerprint" | "fingerprint-dark" => {
             from_toml(include_str!("../../themes/fingerprint-dark.toml"))
         }
-        "synthwave" => from_toml(include_str!("../../themes/synthwave.toml")),
-        "prism" => from_toml(include_str!("../../themes/prism.toml")),
+        "fingerprint-light" => from_toml(include_str!("../../themes/fingerprint-light.toml")),
+        "synthwave" | "synthwave-dark" => {
+            from_toml(include_str!("../../themes/synthwave-dark.toml"))
+        }
+        "synthwave-light" => from_toml(include_str!("../../themes/synthwave-light.toml")),
+        "prism" | "prism-dark" => from_toml(include_str!("../../themes/prism-dark.toml")),
+        "prism-light" => from_toml(include_str!("../../themes/prism-light.toml")),
         _ => anyhow::bail!("unknown theme: {name}"),
     }
 }

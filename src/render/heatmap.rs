@@ -35,7 +35,11 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     // Generate heatmap from contribution years (most recent first).
     let weeks = 52;
     let days = 7;
-    let colors = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"];
+    let colors: [&str; 5] = if theme.is_light {
+        ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"]
+    } else {
+        ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"]
+    };
 
     // Use contribution data to fill the grid. For now, generate a deterministic
     // pattern from the data since we don't have daily granularity yet.

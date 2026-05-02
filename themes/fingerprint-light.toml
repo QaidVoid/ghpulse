@@ -1,0 +1,21 @@
+name = "Fingerprint (Light)"
+background = "#f6f8fa"
+foreground = "#24292f"
+accent = "#6f42c1"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 300
+is_light = true
+
+[star]
+min_radius = 2
+max_radius = 8
+glow = false
+
+[connection]
+opacity = 0.1
+width = 0.5
+
+[animation]
+twinkle = false
+duration = "3s"

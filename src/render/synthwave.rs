@@ -4,33 +4,88 @@ use crate::render::context::RenderContext;
 use crate::svg::Svg;
 use crate::svg::theme::Theme;
 
+struct Palette {
+    sky_top: &'static str,
+    sky_mid: &'static str,
+    sky_bottom: &'static str,
+    ground_top: &'static str,
+    ground_bottom: &'static str,
+    sun_top: &'static str,
+    sun_mid: &'static str,
+    sun_bottom: &'static str,
+    stripe: &'static str,
+    grid: &'static str,
+    title: &'static str,
+    stats: &'static str,
+    label: &'static str,
+    pct: &'static str,
+}
+
+const DARK: Palette = Palette {
+    sky_top: "#0a0118",
+    sky_mid: "#28114a",
+    sky_bottom: "#5b1e6b",
+    ground_top: "#1a0428",
+    ground_bottom: "#000007",
+    sun_top: "#fef08a",
+    sun_mid: "#ff6b3d",
+    sun_bottom: "#ff2bd6",
+    stripe: "#0a0118",
+    grid: "#ff2bd6",
+    title: "#fef08a",
+    stats: "#a8d8ff",
+    label: "#f0a8e8",
+    pct: "#a8d8ff",
+};
+
+const LIGHT: Palette = Palette {
+    sky_top: "#fff5e6",
+    sky_mid: "#ffd6e7",
+    sky_bottom: "#ffb3d1",
+    ground_top: "#f0d4e8",
+    ground_bottom: "#e6c2d9",
+    sun_top: "#ffea7a",
+    sun_mid: "#ff7a3d",
+    sun_bottom: "#d63384",
+    stripe: "#ffd6e7",
+    grid: "#d63384",
+    title: "#a04060",
+    stats: "#5b1e6b",
+    label: "#5b1e6b",
+    pct: "#7a3a8a",
+};
+
 /// Render the synthwave / retrowave visualization.
 pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     let mut doc = Svg::new(theme.width, theme.height);
     let w = theme.width as f64;
     let h = theme.height as f64;
     let horizon = h * 0.62;
+    let p = if theme.is_light { &LIGHT } else { &DARK };
 
-    doc.def(
+    doc.def(&format!(
         r##"<linearGradient id="sw-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0a0118"/>
-            <stop offset="55%" stop-color="#28114a"/>
-            <stop offset="100%" stop-color="#5b1e6b"/>
+            <stop offset="0%" stop-color="{}"/>
+            <stop offset="55%" stop-color="{}"/>
+            <stop offset="100%" stop-color="{}"/>
         </linearGradient>"##,
-    );
-    doc.def(
+        p.sky_top, p.sky_mid, p.sky_bottom
+    ));
+    doc.def(&format!(
         r##"<linearGradient id="sw-ground" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#1a0428"/>
-            <stop offset="100%" stop-color="#000007"/>
+            <stop offset="0%" stop-color="{}"/>
+            <stop offset="100%" stop-color="{}"/>
         </linearGradient>"##,
-    );
-    doc.def(
+        p.ground_top, p.ground_bottom
+    ));
+    doc.def(&format!(
         r##"<linearGradient id="sw-sun" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fef08a"/>
-            <stop offset="50%" stop-color="#ff6b3d"/>
-            <stop offset="100%" stop-color="#ff2bd6"/>
+            <stop offset="0%" stop-color="{}"/>
+            <stop offset="50%" stop-color="{}"/>
+            <stop offset="100%" stop-color="{}"/>
         </linearGradient>"##,
-    );
+        p.sun_top, p.sun_mid, p.sun_bottom
+    ));
     doc.def(
         r##"<filter id="sw-neon" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.5" result="blur"/>
@@ -69,7 +124,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         let band_h = (sun_r * 0.07).max(2.5);
         doc.add(
             doc.rect(sun_cx - sun_r, band_y, sun_r * 2.0, band_h)
-                .fill("#0a0118")
+                .fill(p.stripe)
                 .opacity(0.95)
                 .attr("clip-path", "url(#sw-sun-clip)"),
         );
@@ -85,7 +140,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     // Perspective grid below the horizon. Vanishing point at the sun base.
     let vp_x = sun_cx;
     let vp_y = horizon;
-    let grid_color = "#ff2bd6";
+    let grid_color = p.grid;
     let grid_opacity = 0.55;
 
     let row_count = 9;
@@ -116,7 +171,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     // Title sits comfortably above the sun.
     doc.add(
         doc.text(w / 2.0, 36.0, &ctx.user_name.to_uppercase())
-            .fill("#fef08a")
+            .fill(p.title)
             .font_size(18.0)
             .font_family(&theme.font)
             .text_anchor("middle")
@@ -133,7 +188,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
                 ctx.total_repos, ctx.total_stars, ctx.total_contributions
             ),
         )
-        .fill("#a8d8ff")
+        .fill(p.stats)
         .font_size(10.0)
         .font_family(&theme.font)
         .text_anchor("middle")
@@ -172,7 +227,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
             );
             doc.add(
                 doc.text(cx, y - 6.0, &lang.name)
-                    .fill("#f0a8e8")
+                    .fill(p.label)
                     .font_size(9.0)
                     .font_family(&theme.font)
                     .text_anchor("middle")
@@ -180,7 +235,7 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
             );
             doc.add(
                 doc.text(cx, horizon + 14.0, &format!("{:.1}%", lang.percentage))
-                    .fill("#a8d8ff")
+                    .fill(p.pct)
                     .font_size(8.0)
                     .font_family(&theme.font)
                     .text_anchor("middle")

@@ -4,6 +4,30 @@ use crate::render::context::RenderContext;
 use crate::svg::Svg;
 use crate::svg::theme::Theme;
 
+struct Palette {
+    bg_inner: &'static str,
+    bg_outer: &'static str,
+    incoming_beam: &'static str,
+    glass_stroke: &'static str,
+    glass_mid: &'static str,
+}
+
+const DARK: Palette = Palette {
+    bg_inner: "#1a1430",
+    bg_outer: "#0c0a18",
+    incoming_beam: "#ffffff",
+    glass_stroke: "#ffffff",
+    glass_mid: "#a8d8ff",
+};
+
+const LIGHT: Palette = Palette {
+    bg_inner: "#ffffff",
+    bg_outer: "#e8eaf2",
+    incoming_beam: "#1f2328",
+    glass_stroke: "#1f2328",
+    glass_mid: "#6f7aa3",
+};
+
 /// Render the prism / language spectrum visualization.
 ///
 /// White light enters a triangular prism and refracts into a fan of beams,
@@ -12,13 +36,15 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     let mut doc = Svg::new(theme.width, theme.height);
     let w = theme.width as f64;
     let h = theme.height as f64;
+    let p = if theme.is_light { &LIGHT } else { &DARK };
 
-    doc.def(
+    doc.def(&format!(
         r##"<radialGradient id="prism-bg" cx="50%" cy="40%" r="80%">
-            <stop offset="0%" stop-color="#1a1430"/>
-            <stop offset="100%" stop-color="#0c0a18"/>
+            <stop offset="0%" stop-color="{}"/>
+            <stop offset="100%" stop-color="{}"/>
         </radialGradient>"##,
-    );
+        p.bg_inner, p.bg_outer
+    ));
     doc.def(
         r##"<filter id="beam-glow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="2.5" result="b"/>
@@ -34,10 +60,10 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
     let prism_size = (h * 0.45).min(170.0);
     let half = prism_size / 2.0;
 
-    // Incoming beam: white horizontal strip from left edge into the prism.
+    // Incoming beam: horizontal strip from left edge into the prism.
     doc.add(
         doc.rect(0.0, prism_cy - 3.5, prism_cx - half * 0.5, 7.0)
-            .fill("#ffffff")
+            .fill(p.incoming_beam)
             .opacity(0.95)
             .filter("beam-glow"),
     );
@@ -52,17 +78,18 @@ pub fn render(ctx: &RenderContext, theme: &Theme) -> Result<String> {
         prism_cx + half * 0.5,
         prism_cy + half,
     );
-    doc.def(
+    doc.def(&format!(
         r##"<linearGradient id="prism-glass" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
-            <stop offset="50%" stop-color="#a8d8ff" stop-opacity="0.18"/>
-            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.10"/>
+            <stop offset="0%" stop-color="{}" stop-opacity="0.10"/>
+            <stop offset="50%" stop-color="{}" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="{}" stop-opacity="0.10"/>
         </linearGradient>"##,
-    );
+        p.glass_stroke, p.glass_mid, p.glass_stroke
+    ));
     doc.add(
         crate::svg::ElementBuilder::new_self_closing(format!(r##"<polygon points="{triangle}""##))
             .fill("url(#prism-glass)")
-            .stroke("#ffffff")
+            .stroke(p.glass_stroke)
             .stroke_width(1.2)
             .opacity(0.85),
     );

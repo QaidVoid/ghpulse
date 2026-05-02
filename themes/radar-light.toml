@@ -1,0 +1,21 @@
+name = "Radar (Light)"
+background = "#f6f8fa"
+foreground = "#24292f"
+accent = "#0969da"
+font = "JetBrains Mono, monospace"
+width = 600
+height = 600
+is_light = true
+
+[star]
+min_radius = 3
+max_radius = 8
+glow = false
+
+[connection]
+opacity = 0.2
+width = 1.0
+
+[animation]
+twinkle = false
+duration = "2s"

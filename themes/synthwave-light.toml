@@ -1,0 +1,12 @@
+name = "Synthwave (Light)"
+background = "#fff0f5"
+foreground = "#5b1e6b"
+accent = "#d63384"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+is_light = true
+
+[animation]
+twinkle = false
+duration = "0s"

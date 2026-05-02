@@ -1,0 +1,21 @@
+name = "Terminal (Light)"
+background = "#f4ecd8"
+foreground = "#1a3a1a"
+accent = "#a04a00"
+font = "JetBrains Mono, monospace"
+width = 800
+height = 400
+is_light = true
+
+[star]
+min_radius = 2
+max_radius = 10
+glow = false
+
+[connection]
+opacity = 0.1
+width = 0.3
+
+[animation]
+twinkle = false
+duration = "2s"
