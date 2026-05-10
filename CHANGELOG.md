@@ -1,4 +1,10 @@
 
+## 0.1.3 — 2026-05-10
+
+### Features
+
+- Add light mode for all themes
+
 ## 0.1.2 — 2026-04-26
 
 ### Bug Fixes
